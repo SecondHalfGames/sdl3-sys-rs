@@ -205,7 +205,7 @@ impl LinkFlags {
     }
 }
 
-#[cfg(all(windows, feature = "build-from-source", not(feature = "link-static")))]
+#[cfg(all(feature = "build-from-source", not(feature = "link-static")))]
 // based on find_cargo_target_dir from sdl2-sys
 fn top_level_cargo_target_dir() -> std::path::PathBuf {
     use std::path::PathBuf;
@@ -337,13 +337,23 @@ fn build(f: impl FnOnce(&mut Config) -> Result<(), Box<dyn Error>>) -> Result<()
 
             find_and_output_cmake_dir_metadata(&out_dir)?;
 
-            #[cfg(all(windows, not(feature = "link-static")))]
+            #[cfg(not(feature = "link-static"))]
             {
-                // Windows can't find the built dll when run, so copy it to the target dir
-                std::fs::copy(
-                    out_dir.join("bin").join(format!("{LIB_NAME}.dll")),
-                    top_level_cargo_target_dir().join(format!("{LIB_NAME}.dll")),
-                )?;
+                let info = if cfg!(windows) {
+                    Some((out_dir.join("bin"), format!("{LIB_NAME}.dll")))
+                } else if cfg!(target_os = "macos") {
+                    Some((out_dir.join("lib"), "libSDL3.0.dylib".to_owned()))
+                } else {
+                    None
+                };
+
+                if let Some((input_dir, dll_name)) = info {
+                    // Windows can't find the built dll when run, so copy it to the target dir
+                    std::fs::copy(
+                        input_dir.join(&dll_name),
+                        top_level_cargo_target_dir().join(dll_name),
+                    )?;
+                }
             }
         }
         #[cfg(not(feature = "build-from-source"))]
