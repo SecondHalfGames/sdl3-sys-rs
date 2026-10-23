@@ -20,6 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             config.define("SDL_EXAMPLES", "OFF");
             config.define("SDL_REVISION", sdl3_src::REVISION);
             config.define("SDL_TESTS", "OFF");
+            config.define("CMAKE_DUMPBIN", "llvm-objdump");
 
             if LINK_FRAMEWORK {
                 config.define("SDL_FRAMEWORK", "ON");
