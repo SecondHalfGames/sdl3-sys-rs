@@ -325,7 +325,7 @@ fn build(
                 build_config.define("CMAKE_SYSTEM_PROCESSOR", processor);
             }
 
-            build_config.define("CMAKE_DLLTOOL", "llvm-objdump");
+            build_config.define("CMAKE_DUMPBIN", "llvm-objdump");
 
             f(&mut build_config)?;
             let out_dir = build_config.build();
